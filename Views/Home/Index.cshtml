@@ -1,0 +1,9 @@
+﻿@model IEnumerable<string>
+
+<h1>You are now in Folder - "@Model.FirstOrDefault()"</h1>
+<ul>
+    <li>@Html.ActionLink("←Go to root", "Index", new { })</li>
+@foreach (string item in Model.Skip(1)){
+        <li>@Html.ActionLink(item, "Index", new { name = item })</li>
+}
+</ul>
