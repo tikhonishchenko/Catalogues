@@ -7,3 +7,9 @@
         <li>@Html.ActionLink(item, "Index", new { name = item })</li>
 }
 </ul>
+@Html.ActionLink("Download", "GenerateAndDownloadTXTFile", new { })
+@using (Html.BeginForm("UploadFile", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <input type="file" name="file" />
+    <input type="submit" value="Import from file" />
+}

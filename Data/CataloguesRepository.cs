@@ -24,5 +24,37 @@ namespace Catalogues.Data
             }
             return catalogue.ChildrenToList();
         }
+
+        internal async static Task<string> DBToString()
+        {
+            string result = "";
+            foreach (CatalogueModel catalogue in await GetCataloguesAsync())
+            {
+                result += catalogue.Name + "→" + catalogue.Children + '\\';
+            }
+            return result;
+        }
+
+        internal async static void ClearDBAndImportFromStringToDB(string data)
+        {
+            using (AppDBContext db = new AppDBContext())
+            {
+                db.Database.ExecuteSqlRaw("DELETE FROM Folders");
+                db.Database.ExecuteSqlRaw("VACUUM");
+                string[] catalogues = data.Split('\\');
+                foreach (string catalogue in catalogues)
+                {
+                    string[] catalogueData = catalogue.Split('→');
+                    if (catalogueData.Length == 2)
+                    {
+                        CatalogueModel newCatalogue = new CatalogueModel(catalogueData[0], catalogueData[1]);
+                        db.Folders.Add(newCatalogue);
+                    }
+                }
+                await db.SaveChangesAsync();
+            }
+        }
+
+
     }
 }

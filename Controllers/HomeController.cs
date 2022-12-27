@@ -2,6 +2,7 @@
 using Catalogues.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Text;
 
 namespace Catalogues.Controllers
 {
@@ -29,6 +30,33 @@ namespace Catalogues.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        public async Task GenerateAndDownloadTXTFile()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(await CataloguesRepository.DBToString());
+
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            var stream = new MemoryStream(bytes);
+
+            Response.Headers.Add("Content-Disposition", "attachment; filename=test.txt");
+            Response.ContentType = "text/plain";
+            stream.CopyTo(Response.Body);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadFile(IFormFile file)
+        {
+            if (file != null)
+            {
+                using (var reader = new StreamReader(file.OpenReadStream()))
+                {
+                    string data = await reader.ReadToEndAsync();
+                    CataloguesRepository.ClearDBAndImportFromStringToDB(data);
+                }
+            }
+            return RedirectToAction("Index");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
